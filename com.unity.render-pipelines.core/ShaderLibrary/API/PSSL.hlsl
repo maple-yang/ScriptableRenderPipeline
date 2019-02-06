@@ -30,6 +30,8 @@
 #define WaveActiveBitAnd CrossLaneAnd
 #define WaveActiveBitOr CrossLaneOr
 #define WaveGetID GetWaveID
+#define INTRINSIC_WAVESWIZZLE
+#define WaveSwizzle __XB_LaneSwizzle
 
 #define INTRINSIC_WAVE_ACTIVE_ALL_ANY
 bool WaveActiveAllTrue(bool expression)

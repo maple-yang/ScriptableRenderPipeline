@@ -82,6 +82,8 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         public static readonly int _ESMShadowAtlasSize = Shader.PropertyToID("_ESMShadowAtlasSize");
         public static readonly int _CascadeShadowAtlasSize = Shader.PropertyToID("_CascadeShadowAtlasSize");
         public static readonly int _CascadeShadowCount = Shader.PropertyToID("_CascadeShadowCount");
+        public static readonly int _EVSMDestinationMip0 = Shader.PropertyToID("_EVSMDestinationMip0");
+        public static readonly int _EVSMPassParams0 = Shader.PropertyToID("_EVSMPassParams0");
 
         // Moment shadow map data
         public static readonly int _MomentShadowAtlas = Shader.PropertyToID("_MomentShadowAtlas");

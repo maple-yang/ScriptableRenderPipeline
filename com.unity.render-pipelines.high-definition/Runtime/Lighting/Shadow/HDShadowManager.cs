@@ -161,7 +161,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         // The two shadowmaps atlases we uses, one for directional cascade (without resize) and the second for the rest of the shadows
         HDShadowAtlas               m_CascadeAtlas;
         HDShadowAtlas               m_Atlas;
-        HDShadowAtlas               m_ESMAtlas;
+        HDShadowAtlas               m_AreaLightShadowAtlas;
 
         int m_MaxShadowRequests;
         int                         m_ShadowRequestCount;
@@ -184,7 +184,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 
             // ESM Shadows (used for area lights) are going to be allocated after.
             // TODO_FCC: Make this growable?
-            m_ESMAtlas = new HDShadowAtlas(renderPipelineResources, width, height, HDShaderIDs._ESMShadowAtlasSize, clearMaterial, false, depthBufferBits: atlasDepthBits, name: "Area Light Shadow Map Atlas");
+            m_AreaLightShadowAtlas = new HDShadowAtlas(renderPipelineResources, width, height, HDShaderIDs._ESMShadowAtlasSize, clearMaterial, false, depthBufferBits: atlasDepthBits, EVSM: true,  name: "Area Light Shadow Map Atlas");
 
             m_ShadowDataBuffer = new ComputeBuffer(maxShadowRequests, System.Runtime.InteropServices.Marshal.SizeOf(typeof(HDShadowData)));
             m_DirectionalShadowDataBuffer = new ComputeBuffer(1, System.Runtime.InteropServices.Marshal.SizeOf(typeof(HDDirectionalShadowData)));
@@ -244,7 +244,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             if(isForAreaLight)
             {
                 // TODO_FCC: Make this growable.
-                m_ESMAtlas.ReserveResolution(resolutionRequest);
+                m_AreaLightShadowAtlas.ReserveResolution(resolutionRequest);
             }
             else
             {
@@ -290,7 +290,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 }
                 case ShadowMapType.AreaLightAtlas:
                 {
-                    m_ESMAtlas.AddShadowRequest(shadowRequest);
+                    m_AreaLightShadowAtlas.AddShadowRequest(shadowRequest);
                     break;
                 }
             };
@@ -372,7 +372,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         public void LayoutShadowMaps(LightingDebugSettings lightingDebugSettings)
         {
             m_Atlas.UpdateDebugSettings(lightingDebugSettings);
-            m_ESMAtlas.UpdateDebugSettings(lightingDebugSettings);
+            m_AreaLightShadowAtlas.UpdateDebugSettings(lightingDebugSettings);
 
             if (m_CascadeAtlas != null)
                 m_CascadeAtlas.UpdateDebugSettings(lightingDebugSettings);
@@ -387,7 +387,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             if (m_CascadeAtlas != null && !m_CascadeAtlas.Layout(false))
                 Debug.LogError("Cascade Shadow atlasing has failed, only one directional light can cast shadows at a time");
             m_Atlas.Layout();
-            m_ESMAtlas.Layout();
+            m_AreaLightShadowAtlas.Layout();
         }
 
         unsafe public void PrepareGPUShadowDatas(CullingResults cullResults, Camera camera)
@@ -406,7 +406,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 }
                 else if(m_ShadowRequests[i].shadowMapType == ShadowMapType.AreaLightAtlas)
                 {
-                    atlas = m_ESMAtlas;
+                    atlas = m_AreaLightShadowAtlas;
                 }
                 m_ShadowDatas.Add(CreateShadowData(m_ShadowRequests[i], atlas));
                 m_ShadowRequests[i].shadowIndex = shadowIndex++;
@@ -448,7 +448,8 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             // TODO_FCC: This will require some extra data passed through for special handling if we are going to draw as ESM on the fly.
             using (new ProfilingSample(cmd, "AREA", CustomSamplerId.RenderShadows.GetSampler()))
             {
-                m_ESMAtlas.RenderShadows(renderContext, cmd, dss);
+                m_AreaLightShadowAtlas.RenderShadows(renderContext, cmd, dss);
+                m_AreaLightShadowAtlas.ComputeEVSMMips(cmd, hdCamera);
             }            
 
             // If the shadow algorithm is the improved moment shadow
@@ -477,7 +478,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 
             cmd.SetGlobalTexture(HDShaderIDs._ShadowmapAtlas, m_Atlas.identifier);
             cmd.SetGlobalTexture(HDShaderIDs._ShadowmapCascadeAtlas, m_CascadeAtlas.identifier);
-            cmd.SetGlobalTexture(HDShaderIDs._ESMShadowmapAtlas, m_ESMAtlas.identifier);
+            cmd.SetGlobalTexture(HDShaderIDs._ESMShadowmapAtlas, m_AreaLightShadowAtlas.identifier);
 
             cmd.SetGlobalInt(HDShaderIDs._CascadeShadowCount, m_CascadeCount + 1);
         }
@@ -492,7 +493,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             // Clear the shadows atlas infos and requests
             m_Atlas.Clear();
             m_CascadeAtlas.Clear();
-            m_ESMAtlas.Clear();
+            m_AreaLightShadowAtlas.Clear();
             m_ShadowResolutionRequests.Clear();
 
             m_ShadowRequestCount = 0;
@@ -533,7 +534,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 }
                 case ShadowMapType.AreaLightAtlas:
                 {
-                    m_ESMAtlas.DisplayAtlas(cmd, debugMaterial, shadowRequest.atlasViewport, screenX, screenY, screenSizeX, screenSizeY, minValue, maxValue);
+                    m_AreaLightShadowAtlas.DisplayAtlas(cmd, debugMaterial, shadowRequest.atlasViewport, screenX, screenY, screenSizeX, screenSizeY, minValue, maxValue);
                     break;
                 }
             };
@@ -544,7 +545,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             m_ShadowDataBuffer.Dispose();
             m_DirectionalShadowDataBuffer.Dispose();
             m_Atlas.Release();
-            m_ESMAtlas.Release();
+            m_AreaLightShadowAtlas.Release();
             m_CascadeAtlas.Release();
         }
     }

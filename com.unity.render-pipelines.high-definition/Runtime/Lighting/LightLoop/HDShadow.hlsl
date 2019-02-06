@@ -70,8 +70,9 @@ float GetAreaLightAttenuation(HDShadowContext shadowContext, float2 positionSS, 
 {
     // Note: Here we assume that all the shadow map cube faces have been added contiguously in the buffer to retreive the shadow information
     HDShadowData sd = shadowContext.shadowDatas[shadowDataIndex];
+    return EvalShadow_AreaDepth(sd, _ESMShadowmapAtlas, s_linear_clamp_compare_sampler, positionSS, positionWS, normalWS, L, L_dist, perspecive);
 
-    return EvalShadow_PunctualDepth(sd, _ESMShadowmapAtlas, s_linear_clamp_compare_sampler, positionSS, positionWS, normalWS, L, L_dist, perspecive);
+    return 0; EvalShadow_AreaDepth(sd, _ESMShadowmapAtlas, s_linear_clamp_compare_sampler, positionSS, positionWS, normalWS, L, L_dist, perspecive);
 
 }
 
@@ -79,6 +80,6 @@ float GetAreaLightAttenuation(HDShadowContext shadowContext, float2 positionSS, 
 {
     HDShadowData sd = shadowContext.shadowDatas[shadowDataIndex];
 
-    return EvalShadow_AreaDepth(sd, _ESMShadowmapAtlas, s_linear_clamp_compare_sampler, positionSS, positionWS, true);
+    return 0;// EvalShadow_AreaDepth(sd, _ESMShadowmapAtlas, s_linear_clamp_compare_sampler, positionSS, positionWS, true);
 }
 #endif // LIGHTLOOP_HD_SHADOW_HLSL

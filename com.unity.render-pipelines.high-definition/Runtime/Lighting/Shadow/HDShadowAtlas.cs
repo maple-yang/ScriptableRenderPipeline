@@ -24,13 +24,19 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         int                         m_AtlasSizeShaderID;
         RenderPipelineResources     m_RenderPipelineResources;
 
+
+        // ESM data
+        bool m_SupportsEVSM;
+        RTHandleSystem.RTHandle m_EVSMMips;  
+
+
         // Moment shadow data
         bool m_SupportMomentShadows;
         RTHandleSystem.RTHandle m_AtlasMoments;
         RTHandleSystem.RTHandle m_IntermediateSummedAreaTexture;
         RTHandleSystem.RTHandle m_SummedAreaTexture;
 
-        public HDShadowAtlas(RenderPipelineResources renderPipelineResources, int width, int height, int atlasSizeShaderID, Material clearMaterial, bool supportMomentShadows, FilterMode filterMode = FilterMode.Bilinear, DepthBits depthBufferBits = DepthBits.Depth16, RenderTextureFormat format = RenderTextureFormat.Shadowmap, string name = "")
+        public HDShadowAtlas(RenderPipelineResources renderPipelineResources, int width, int height, int atlasSizeShaderID, Material clearMaterial, bool supportMomentShadows, FilterMode filterMode = FilterMode.Bilinear, DepthBits depthBufferBits = DepthBits.Depth16, RenderTextureFormat format = RenderTextureFormat.Shadowmap, bool EVSM = false,  string name = "")
         {
             this.width = width;
             this.height = height;
@@ -42,6 +48,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             m_ClearMaterial = clearMaterial;
             m_SupportMomentShadows = supportMomentShadows;
             m_RenderPipelineResources = renderPipelineResources;
+            m_SupportsEVSM = EVSM;
 
             AllocateRenderTexture();
         }
@@ -62,6 +69,13 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 string summedAreaName = m_Name + "SummedAreaFinal";
                 m_SummedAreaTexture = RTHandles.Alloc(width, height, filterMode: FilterMode.Point, colorFormat: GraphicsFormat.R32G32B32A32_SInt, enableRandomWrite: true, name: summedAreaName);
             }
+
+            if(m_SupportsEVSM)
+            {
+                string EVSMMipsName = m_Name + "EVSM";
+                m_EVSMMips = RTHandles.Alloc(width >> 2, height >> 2, filterMode: FilterMode.Point, colorFormat: GraphicsFormat.R32G32_SFloat, enableRandomWrite: true, useMipMap: true,  autoGenerateMips: false, name: EVSMMipsName);
+            }
+
             identifier = new RenderTargetIdentifier(m_Atlas);
         }
 
@@ -257,7 +271,47 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             cmd.SetGlobalFloat(HDShaderIDs._ZClip, 1.0f);   // Re-enable zclip globally
         }
 
-        public void ComputeMomentShadows(CommandBuffer cmd, HDCamera hdCamera )
+
+        public void ComputeEVSMMips(CommandBuffer cmd, HDCamera hdCamera)
+        {
+            ComputeShader evsmCS = m_RenderPipelineResources.shaders.downsampleIntoEVSMCS;
+            if (evsmCS == null) return;
+
+            using (new ProfilingSample(cmd, "Render EVSM", CustomSamplerId.RenderShadows.GetSampler()))
+            {
+                HDUtils.SetRenderTarget(cmd, hdCamera, m_EVSMMips, ClearFlag.Color, Color.black);
+                int computeEVSMKernel = evsmCS.FindKernel("DownsampleShadowMaps");
+
+                // xy: invSrcSize, zw: Exponent
+                Vector4 parameters0 = new Vector4(1.0f / width, 1.0f / height, 20.0f, 20.0f);
+                // TODO_FCC: Set only for the active viewport.
+                Vector4 parameters1 = new Vector4(width, height, 0.0f, 0.0f);
+
+                cmd.SetComputeTextureParam(evsmCS, computeEVSMKernel, HDShaderIDs._Source, m_Atlas);
+                cmd.SetComputeTextureParam(evsmCS, computeEVSMKernel, HDShaderIDs._EVSMDestinationMip0, m_EVSMMips);
+                cmd.SetComputeVectorParam(evsmCS, HDShaderIDs._EVSMPassParams0, parameters0);
+
+                // Compute the actual viewport filled
+                int viewportWidth = 0;
+                int viewportHeight = 0;
+                foreach (var shadowRequest in m_ShadowRequests)
+                {
+                    viewportWidth = Mathf.Max(Mathf.CeilToInt(shadowRequest.atlasViewport.max.x));
+                    viewportHeight = Mathf.Max(Mathf.CeilToInt(shadowRequest.atlasViewport.max.y));
+                }
+
+                // The destination is 1/4 of the original size.
+                Vector2Int dstSize = new Vector2Int(Mathf.CeilToInt((viewportWidth+3) / 4), Mathf.CeilToInt((viewportHeight+3) / 4));
+                int dispatchSizeX = (dstSize.x + 7) / 8;
+                int dispatchSizeY = (dstSize.y + 7) / 8;
+                cmd.DispatchCompute(evsmCS, computeEVSMKernel, dispatchSizeX, dispatchSizeY, 1);
+
+                // We don't allow for explicit binding of mips so we need to generate like this.
+                cmd.GenerateMips(m_EVSMMips);
+            }
+        }
+
+        public void ComputeMomentShadows(CommandBuffer cmd, HDCamera hdCamera)
         {
             // If the target kernel is not available
             ComputeShader momentCS = m_RenderPipelineResources.shaders.momentShadowsCS;
@@ -310,7 +364,6 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 }
             }
         }
-
         public void DisplayAtlas(CommandBuffer cmd, Material debugMaterial, Rect atlasViewport, float screenX, float screenY, float screenSizeX, float screenSizeY, float minValue, float maxValue)
         {
             if (m_Atlas == null)
@@ -358,6 +411,12 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             {
                 RTHandles.Release(m_SummedAreaTexture);
                 m_SummedAreaTexture = null;
+            }
+
+            if (m_EVSMMips != null)
+            {
+                RTHandles.Release(m_EVSMMips);
+                m_EVSMMips = null;
             }
         }
     }

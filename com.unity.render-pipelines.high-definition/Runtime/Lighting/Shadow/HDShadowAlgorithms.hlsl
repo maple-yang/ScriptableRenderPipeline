@@ -280,17 +280,22 @@ float EvalShadow_PunctualDepth(HDShadowData sd, Texture2D tex, SamplerComparison
 //
 //  Area light shadows
 //
-float EvalShadow_AreaDepth(HDShadowData sd, Texture2D tex, SamplerComparisonState samp, float2 positionSS, float3 positionWS, bool perspective)
+float EvalShadow_AreaDepth(HDShadowData sd, Texture2D tex, SamplerComparisonState samp, float2 positionSS, float3 positionWS, float3 normalWS, float3 L, float L_dist, bool perspective)
 {
     // TODO_FCC: THIS IS ALL TEMP AND BROKEN
 
     /* in stereo, translate input position to the same space as shadows for proper sampling and bias */
     positionWS = StereoCameraRelativeEyeToCenter(positionWS);
 
-    float3 posTC = EvalShadow_GetTexcoordsAtlas(sd, _ESMShadowAtlasSize.zw, positionWS, perspective);
+    /* bias the world position */
+    float recvBiasWeight = EvalShadow_ReceiverBiasWeight(sd, _ESMShadowAtlasSize.zw, sd.atlasOffset, sd.viewBias, sd.edgeTolerance, sd.flags, tex, samp, positionWS, normalWS, L, L_dist, perspective);
+    positionWS = EvalShadow_ReceiverBias(sd.viewBias, sd.normalBias, positionWS, normalWS, L, L_dist, recvBiasWeight, perspective);
+    /* get shadowmap texcoords */
+    float3 posTC = EvalShadow_GetTexcoordsAtlas(sd, _ShadowAtlasSize.zw, positionWS, perspective);
+    /* get the per sample bias */
+    float2 sampleBias = EvalShadow_SampleBias_Persp(positionWS, normalWS, posTC);
     /* sample the texture */
-    // TODO: Use ESM instead.
-    return SampleShadow_PCF_Tent_3x3(_ESMShadowAtlasSize.zwxy, posTC, 10, tex, samp);
+    return SampleShadow_PCF_Tent_3x3(_ESMShadowAtlasSize.zwxy, posTC, sampleBias, tex, samp);
 }
 
 
