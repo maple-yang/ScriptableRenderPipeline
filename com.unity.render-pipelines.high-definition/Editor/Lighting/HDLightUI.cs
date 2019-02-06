@@ -132,7 +132,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
 #if ENABLE_RAYTRACING
                 CED.Conditional((serialized, owner) => serialized.editorLightShape != LightShape.Tube,
 #else
-                CED.Conditional((serialized, owner) => serialized.editorLightShape != LightShape.Rectangle && serialized.editorLightShape != LightShape.Tube,
+                CED.Conditional((serialized, owner) => /*serialized.editorLightShape != LightShape.Rectangle &&*/ serialized.editorLightShape != LightShape.Tube,
 #endif
                     CED.AdvancedFoldoutGroup(s_Styles.shadowHeader, Expandable.Shadows, k_ExpandedState,
                         (serialized, owner) => GetAdvanced(Advanceable.Shadow, serialized, owner),

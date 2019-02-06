@@ -1431,6 +1431,7 @@ DirectLighting EvaluateBSDF_Rect(   LightLoopContext lightLoopContext,
                           lighting.diffuse, lighting.specular);
 #else
     float3 unL = lightData.positionRWS - positionWS;
+    float3 lightPosition = lightData.positionRWS;
 
     if (dot(lightData.forward, unL) < 0.0001)
     {
@@ -1530,6 +1531,7 @@ DirectLighting EvaluateBSDF_Rect(   LightLoopContext lightLoopContext,
                     ltcValue *= SampleAreaLightCookie(lightData.cookieIndex, LTD, formFactorTD);
                 }
 
+
                 // We use diffuse lighting for accumulation since it is going to be blurred during the SSS pass.
                 // We don't multiply by 'bsdfData.diffuseColor' here. It's done only once in PostEvaluateBSDF().
                 lighting.diffuse += bsdfData.transmittance * ltcValue;
@@ -1569,6 +1571,7 @@ DirectLighting EvaluateBSDF_Rect(   LightLoopContext lightLoopContext,
             lighting.diffuse *= lightData.color;
             lighting.specular *= lightData.color;
 
+
         #ifdef DEBUG_DISPLAY
             if (_DebugLightingMode == DEBUGLIGHTINGMODE_LUX_METER)
             {
@@ -1589,7 +1592,19 @@ DirectLighting EvaluateBSDF_Rect(   LightLoopContext lightLoopContext,
         lighting.diffuse *= areaShadow.xyz;
         lighting.specular *= areaShadow.xyz;
     }
-#endif
+#else   // If we have ray tracing, no need for the cheap hacky version.
+    if (lightData.shadowIndex != -1)
+    {
+        // Sample and attenuate ESM.
+        //float GetPunctualShadowAttenuation(HDShadowContext shadowContext, float2 positionSS, float3 positionWS, float3 normalWS, int shadowDataIndex, float3 L, float L_dist, bool pointLight, bool perspecive)
+
+        float areaShadow = GetAreaLightAttenuation(lightLoopContext.shadowContext, posInput.positionSS, posInput.positionWS, lightData.shadowIndex, float3(0,0,1), normalize(lightData.positionRWS), length(lightData.positionRWS), false, true);
+
+
+        lighting.diffuse *= areaShadow; normalize(GetAbsolutePositionWS(posInput.positionWS)); // normalize(posInput.positionRWS);// normalize(-lightData.positionRWS);
+        lighting.specular *= areaShadow;
+    }
+#endif // ENABLE_RAYTRACING
 
 #endif // LIT_DISPLAY_REFERENCE_AREA
 

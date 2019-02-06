@@ -278,6 +278,23 @@ float EvalShadow_PunctualDepth(HDShadowData sd, Texture2D tex, SamplerComparison
 }
 
 //
+//  Area light shadows
+//
+float EvalShadow_AreaDepth(HDShadowData sd, Texture2D tex, SamplerComparisonState samp, float2 positionSS, float3 positionWS, bool perspective)
+{
+    // TODO_FCC: THIS IS ALL TEMP AND BROKEN
+
+    /* in stereo, translate input position to the same space as shadows for proper sampling and bias */
+    positionWS = StereoCameraRelativeEyeToCenter(positionWS);
+
+    float3 posTC = EvalShadow_GetTexcoordsAtlas(sd, _ESMShadowAtlasSize.zw, positionWS, perspective);
+    /* sample the texture */
+    // TODO: Use ESM instead.
+    return SampleShadow_PCF_Tent_3x3(_ESMShadowAtlasSize.zwxy, posTC, 10, tex, samp);
+}
+
+
+//
 //  Directional shadows (cascaded shadow map)
 //
 

@@ -92,13 +92,35 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         }
 
         // Currently area light shadows are not supported
-        public static void ExtractAreaLightData(VisibleLight visibleLight, LightTypeExtent lightTypeExtent, out Matrix4x4 view, out Matrix4x4 invViewProjection, out Matrix4x4 projection, out Matrix4x4 deviceProjection, out ShadowSplitData splitData)
+        public static void ExtractAreaLightData(HDCamera camera, VisibleLight visibleLight, LightTypeExtent lightTypeExtent, Vector2 viewportSize, float normalBiasMax, out Matrix4x4 view, out Matrix4x4 invViewProjection, out Matrix4x4 projection, out Matrix4x4 deviceProjection, out ShadowSplitData splitData)
         {
-            view = Matrix4x4.identity;
-            invViewProjection = Matrix4x4.identity;
-            deviceProjection = Matrix4x4.identity;
-            projection = Matrix4x4.identity;
-            splitData = default(ShadowSplitData);
+
+            if (lightTypeExtent != LightTypeExtent.Rectangle)
+            {
+                view = Matrix4x4.identity;
+                invViewProjection = Matrix4x4.identity;
+                deviceProjection = Matrix4x4.identity;
+                projection = Matrix4x4.identity;
+                splitData = default(ShadowSplitData);
+            }
+            else
+            {
+                
+                Vector4 lightDir;
+
+                // Compute aspect ratio based on TODO_FCC: Make it better. 
+                float aspectRatio = 1.0f;// visibleLight.light.areaSize.y / visibleLight.light.areaSize.x;
+
+                // TODO_FCC: FOR NOW ANGLE IS HARD CODED TO A CERTAIN VALUE, COMPUTE IT!
+                float spotAngle = 170.0f;
+                visibleLight.spotAngle = spotAngle;
+                float guardAngle = CalcGuardAnglePerspective(visibleLight.spotAngle, viewportSize.x, GetPunctualFilterWidthInTexels(camera, LightType.Rectangle), normalBiasMax, 180.0f - visibleLight.spotAngle);
+                ExtractSpotLightMatrix(visibleLight, 1.0f, guardAngle, aspectRatio, out view, out projection, out deviceProjection, out invViewProjection, out lightDir, out splitData);
+                splitData.cullingSphere = splitData.cullingSphere * 1.000001f;
+            }
+
+
+
         }
 
         // Cubemap faces with flipped z coordinate.

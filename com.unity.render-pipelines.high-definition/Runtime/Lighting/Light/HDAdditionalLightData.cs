@@ -243,7 +243,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 
         int GetShadowRequestCount()
         {
-            return (m_Light.type == LightType.Point) ? 6 : (m_Light.type == LightType.Directional) ? m_ShadowSettings.cascadeShadowSplitCount : 1;
+            return (m_Light.type == LightType.Point && lightTypeExtent == LightTypeExtent.Punctual) ? 6 : (m_Light.type == LightType.Directional) ? m_ShadowSettings.cascadeShadowSplitCount : 1;
         }
 
         public void ReserveShadows(Camera camera, HDShadowManager shadowManager, HDShadowInitParameters initParameters, CullingResults cullResults, FrameSettings frameSettings, int lightIndex)
@@ -300,11 +300,13 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             if (m_Light.type == LightType.Directional)
                 shadowManager.UpdateDirectionalShadowResolution((int)viewportSize.x, m_ShadowSettings.cascadeShadowSplitCount);
 
+            bool areaLight = lightTypeExtent == LightTypeExtent.Rectangle;
+
             // Reserver wanted resolution in the shadow atlas
             bool allowResize = m_Light.type != LightType.Directional;
             int count = GetShadowRequestCount();
             for (int index = 0; index < count; index++)
-                m_ShadowRequestIndices[index] = shadowManager.ReserveShadowResolutions(viewportSize, allowResize);
+                m_ShadowRequestIndices[index] = shadowManager.ReserveShadowResolutions(viewportSize, allowResize, areaLight);
         }
 
         public bool WillRenderShadows()
@@ -334,12 +336,19 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 switch (m_Light.type)
                 {
                     case LightType.Point:
-                        HDShadowUtils.ExtractPointLightData(
-                            hdCamera, m_Light.type, visibleLight, viewportSize, shadowNearPlane,
-                            m_ShadowData.normalBiasMax, (uint)index, out shadowRequest.view,
-                            out invViewProjection, out shadowRequest.projection,
-                            out shadowRequest.deviceProjection, out shadowRequest.splitData
-                        );
+                        if(lightTypeExtent == LightTypeExtent.Rectangle)
+                        {
+                            HDShadowUtils.ExtractAreaLightData(hdCamera, visibleLight, lightTypeExtent, viewportSize, m_ShadowData.normalBiasMax, out shadowRequest.view, out invViewProjection, out shadowRequest.projection, out shadowRequest.deviceProjection, out shadowRequest.splitData);
+                        }
+                        else
+                        {
+                            HDShadowUtils.ExtractPointLightData(
+                                hdCamera, m_Light.type, visibleLight, viewportSize, shadowNearPlane,
+                                m_ShadowData.normalBiasMax, (uint)index, out shadowRequest.view,
+                                out invViewProjection, out shadowRequest.projection,
+                                out shadowRequest.deviceProjection, out shadowRequest.splitData
+                            );
+                        }
                         break;
                     case LightType.Spot:
                         HDShadowUtils.ExtractSpotLightData(
@@ -373,7 +382,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                         manager.UpdateCascade(index, cullingSphere, m_ShadowSettings.cascadeShadowBorders[index]);
                         break;
                     case LightType.Area:
-                        HDShadowUtils.ExtractAreaLightData(visibleLight, lightTypeExtent, out shadowRequest.view, out invViewProjection, out shadowRequest.projection, out shadowRequest.deviceProjection, out shadowRequest.splitData);
+                        HDShadowUtils.ExtractAreaLightData(hdCamera, visibleLight, lightTypeExtent, viewportSize, m_ShadowData.normalBiasMax, out shadowRequest.view, out invViewProjection, out shadowRequest.projection, out shadowRequest.deviceProjection, out shadowRequest.splitData);
                         break;
                 }
 
@@ -426,7 +435,18 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             shadowRequest.zClip = (m_Light.type != LightType.Directional);
             shadowRequest.lightIndex = lightIndex;
             // We don't allow shadow resize for directional cascade shadow
-            shadowRequest.allowResize = m_Light.type != LightType.Directional;
+            if(m_Light.type == LightType.Directional)
+            {
+                shadowRequest.shadowMapType = ShadowMapType.CascadedDirectional;
+            }
+            else if(lightTypeExtent == LightTypeExtent.Rectangle)
+            {
+                shadowRequest.shadowMapType = ShadowMapType.AreaLightAtlas;
+            }
+            else
+            {
+                shadowRequest.shadowMapType = ShadowMapType.PunctualAtlas;
+            }
             shadowRequest.lightType = (int) m_Light.type;
 
             // Shadow algorithm parameters
