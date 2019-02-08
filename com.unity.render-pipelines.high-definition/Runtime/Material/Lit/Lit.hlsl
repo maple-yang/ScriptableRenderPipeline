@@ -1598,10 +1598,8 @@ DirectLighting EvaluateBSDF_Rect(   LightLoopContext lightLoopContext,
         // Sample and attenuate ESM.
         //float GetPunctualShadowAttenuation(HDShadowContext shadowContext, float2 positionSS, float3 positionWS, float3 normalWS, int shadowDataIndex, float3 L, float L_dist, bool pointLight, bool perspecive)
 
-        float areaShadow = GetAreaLightAttenuation(lightLoopContext.shadowContext, posInput.positionSS, posInput.positionWS, lightData.shadowIndex, bsdfData.normalWS, normalize(lightData.positionRWS), length(lightData.positionRWS), false, true);
-
-
-        lighting.diffuse *= areaShadow; normalize(GetAbsolutePositionWS(posInput.positionWS)); // normalize(posInput.positionRWS);// normalize(-lightData.positionRWS);
+        float areaShadow = GetAreaLightAttenuation(lightLoopContext.shadowContext, posInput.positionSS, posInput.positionWS, bsdfData.normalWS, lightData.shadowIndex, normalize(lightData.positionRWS), length(lightData.positionRWS), false, true);
+        lighting.diffuse *= areaShadow;
         lighting.specular *= areaShadow;
     }
 #endif // ENABLE_RAYTRACING

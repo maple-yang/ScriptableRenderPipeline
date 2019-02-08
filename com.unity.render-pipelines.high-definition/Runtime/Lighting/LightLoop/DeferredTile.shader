@@ -290,6 +290,7 @@ Shader "Hidden/HDRP/DeferredTile"
             HLSLPROGRAM
             #pragma target 4.5
             #pragma only_renderers d3d11 ps4 xboxone vulkan metal switch
+            #pragma enable_d3d11_debug_symbols
 
             #pragma vertex Vert
             #pragma fragment Frag
@@ -340,6 +341,7 @@ Shader "Hidden/HDRP/DeferredTile"
             // the deferred shader will require to use multicompile.
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Lit/Lit.hlsl"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Lighting/LightLoop/LightLoop.hlsl"
+
 
             //-------------------------------------------------------------------------------------
             // variable declaration
