@@ -441,19 +441,10 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 invViewProjection = translation * invViewProjection;
             }
 
-            Vector3 shadowPosition = transform.position;
-            // If we have an area light we virtually shift its position for the sake of shadows so that the cone of the given aperture
-            // encompass the vertices of the light. 
-            if (lightTypeExtent == LightTypeExtent.Rectangle)
-            {
-                shadowPosition = GetModifiedAreaLightPositionForShadows(shadowPosition, new Vector2(shapeWidth, shapeHeight), m_Light.transform.forward, areaLightShadowCone);
-            }
-
-
             if (m_Light.type == LightType.Directional || (m_Light.type == LightType.Spot && spotLightShape == SpotLightShape.Box))
                 shadowRequest.position = new Vector3(shadowRequest.view.m03, shadowRequest.view.m13, shadowRequest.view.m23);
             else
-                shadowRequest.position = (ShaderConfig.s_CameraRelativeRendering != 0) ? shadowPosition - cameraPos : shadowPosition;
+                shadowRequest.position = (ShaderConfig.s_CameraRelativeRendering != 0) ? transform.position - cameraPos : transform.position;
 
             shadowRequest.shadowToWorld = invViewProjection.transpose;
             shadowRequest.zClip = (m_Light.type != LightType.Directional);
