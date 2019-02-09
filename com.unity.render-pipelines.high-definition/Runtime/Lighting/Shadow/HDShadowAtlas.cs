@@ -308,7 +308,21 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 
                 // We don't allow for explicit binding of mips so we need to generate like this.
                 cmd.GenerateMips(m_EVSMMips);
+
+                // Reset the size so that we are using the size of the EVSM atlas
+                Vector2Int EVSMAtlasSize = new Vector2Int(width / 4, height / 4);
+                cmd.SetGlobalVector(m_AtlasSizeShaderID, new Vector4(EVSMAtlasSize.x, EVSMAtlasSize.y, 1.0f / EVSMAtlasSize.x, 1.0f / EVSMAtlasSize.y));
             }
+        }
+
+        public RTHandleSystem.RTHandle GetAtlasMips()
+        {
+            if(m_SupportsEVSM)
+            {
+                return m_EVSMMips;
+            }
+
+            return null;
         }
 
         public void ComputeMomentShadows(CommandBuffer cmd, HDCamera hdCamera)

@@ -620,6 +620,11 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 
                 EditorGUILayout.Slider(serialized.serializedShadowData.viewBiasScale, 0.0f, 15.0f, s_Styles.viewBiasScale);
             }
+
+            if(serialized.editorLightShape == LightShape.Rectangle)
+            {
+                EditorGUILayout.Slider(serialized.serializedLightData.areaLightShadowCone, 10.0f, 179.0f, s_Styles.areaLightShadowCone);
+            }
         }
 
 

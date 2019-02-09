@@ -184,7 +184,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 
             // ESM Shadows (used for area lights) are going to be allocated after.
             // TODO_FCC: Make this growable?
-            m_AreaLightShadowAtlas = new HDShadowAtlas(renderPipelineResources, width, height, HDShaderIDs._ESMShadowAtlasSize, clearMaterial, false, depthBufferBits: atlasDepthBits, EVSM: true,  name: "Area Light Shadow Map Atlas");
+            m_AreaLightShadowAtlas = new HDShadowAtlas(renderPipelineResources, width, height, HDShaderIDs._ESMShadowAtlasSize, clearMaterial, false, depthBufferBits: atlasDepthBits, EVSM: false,  name: "Area Light Shadow Map Atlas");
 
             m_ShadowDataBuffer = new ComputeBuffer(maxShadowRequests, System.Runtime.InteropServices.Marshal.SizeOf(typeof(HDShadowData)));
             m_DirectionalShadowDataBuffer = new ComputeBuffer(1, System.Runtime.InteropServices.Marshal.SizeOf(typeof(HDDirectionalShadowData)));
@@ -478,7 +478,16 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 
             cmd.SetGlobalTexture(HDShaderIDs._ShadowmapAtlas, m_Atlas.identifier);
             cmd.SetGlobalTexture(HDShaderIDs._ShadowmapCascadeAtlas, m_CascadeAtlas.identifier);
-            cmd.SetGlobalTexture(HDShaderIDs._AreaLightShadowmapAtlas, m_AreaLightShadowAtlas.identifier);
+
+            const bool useMips = false;
+            if(useMips)
+            {
+                cmd.SetGlobalTexture(HDShaderIDs._AreaLightShadowmapAtlas, m_AreaLightShadowAtlas.GetAtlasMips());
+            }
+            else
+            {
+                cmd.SetGlobalTexture(HDShaderIDs._AreaLightShadowmapAtlas, m_AreaLightShadowAtlas.identifier);
+            }
 
             cmd.SetGlobalInt(HDShaderIDs._CascadeShadowCount, m_CascadeCount + 1);
         }

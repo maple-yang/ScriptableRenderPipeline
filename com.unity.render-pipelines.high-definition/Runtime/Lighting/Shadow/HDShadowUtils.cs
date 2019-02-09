@@ -92,7 +92,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         }
 
         // Currently area light shadows are not supported
-        public static void ExtractAreaLightData(HDCamera camera, VisibleLight visibleLight, LightTypeExtent lightTypeExtent, Vector2 viewportSize, float normalBiasMax, out Matrix4x4 view, out Matrix4x4 invViewProjection, out Matrix4x4 projection, out Matrix4x4 deviceProjection, out ShadowSplitData splitData)
+        public static void ExtractAreaLightData(HDCamera camera, VisibleLight visibleLight, LightTypeExtent lightTypeExtent, Vector3 shadowPosition, float areaLightShadowCone, Vector2 shapeSize, Vector2 viewportSize, float normalBiasMax, out Matrix4x4 view, out Matrix4x4 invViewProjection, out Matrix4x4 projection, out Matrix4x4 deviceProjection, out ShadowSplitData splitData)
         {
 
             if (lightTypeExtent != LightTypeExtent.Rectangle)
@@ -109,14 +109,14 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 Vector4 lightDir;
 
                 // Compute aspect ratio based on TODO_FCC: Make it better. 
-                float aspectRatio = 1.0f;// visibleLight.light.areaSize.y / visibleLight.light.areaSize.x;
+                float aspectRatio = shapeSize.y / shapeSize.x;// visibleLight.light.areaSize.y / visibleLight.light.areaSize.x;
 
                 // TODO_FCC: FOR NOW ANGLE IS HARD CODED TO A CERTAIN VALUE, COMPUTE IT!
-                float spotAngle = 170.0f;
+                float spotAngle = areaLightShadowCone;
                 visibleLight.spotAngle = spotAngle;
                 float guardAngle = CalcGuardAnglePerspective(visibleLight.spotAngle, viewportSize.x, GetPunctualFilterWidthInTexels(camera, LightType.Rectangle), normalBiasMax, 180.0f - visibleLight.spotAngle);
-                ExtractSpotLightMatrix(visibleLight, 1.0f, guardAngle, aspectRatio, out view, out projection, out deviceProjection, out invViewProjection, out lightDir, out splitData);
-                splitData.cullingSphere = splitData.cullingSphere * 1.000001f;
+
+                ExtractAreaLightMatrix(visibleLight, 1.0f, guardAngle, shadowPosition, shapeSize, out view, out projection, out deviceProjection, out invViewProjection, out lightDir, out splitData);
             }
 
 
@@ -230,6 +230,33 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             InvertPerspective(ref deviceProj, ref view, out vpinverse);
             return deviceProj * view;
         }
+
+        // TODO_FCC: This needs to be squished in spot light case above
+        static Matrix4x4 ExtractAreaLightMatrix(VisibleLight vl, float nearPlane, float guardAngle, Vector3 shadowPosition, Vector2 shapeSize, out Matrix4x4 view, out Matrix4x4 proj, out Matrix4x4 deviceProj, out Matrix4x4 vpinverse, out Vector4 lightDir, out ShadowSplitData splitData)
+        {
+            splitData = new ShadowSplitData();
+            splitData.cullingSphere.Set(0.0f, 0.0f, 0.0f, float.NegativeInfinity);
+            splitData.cullingPlaneCount = 0;
+            // get lightDir
+            lightDir = vl.light.transform.forward;
+            // calculate view
+            Matrix4x4 scaleMatrix = Matrix4x4.identity;
+            scaleMatrix.m22 = -1.0f;
+
+
+
+            view = scaleMatrix * vl.localToWorldMatrix.inverse;
+            // calculate projection
+            float fov = vl.spotAngle + guardAngle;
+            float nearZ = Mathf.Max(nearPlane, k_MinShadowNearPlane);
+            float aspectRatio = shapeSize.y / shapeSize.x;
+            proj = Matrix4x4.Perspective(fov, aspectRatio, nearZ, vl.range);
+            // and the compound (deviceProj will potentially inverse-Z)
+            deviceProj = GL.GetGPUProjectionMatrix(proj, false);
+            InvertPerspective(ref deviceProj, ref view, out vpinverse);
+            return deviceProj * view;
+        }
+
 
         static Matrix4x4 ExtractPointLightMatrix(VisibleLight vl, uint faceIdx, float nearPlane, float guardAngle, out Matrix4x4 view, out Matrix4x4 proj, out Matrix4x4 deviceProj, out Matrix4x4 vpinverse, out Vector4 lightDir, out ShadowSplitData splitData)
         {

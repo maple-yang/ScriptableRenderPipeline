@@ -175,7 +175,10 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 
         // Optional cookie for rectangular area lights
         public Texture2D areaLightCookie = null;
-        
+
+        [Range(0.0f, 179.0f)]
+        public float areaLightShadowCone = 170.0f;
+
         // Duplication of HDLightEditor.k_MinAreaWidth, maybe do something about that
         const float k_MinAreaWidth = 0.01f; // Provide a small size of 1cm for line light
 
@@ -314,13 +317,23 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             return m_WillRenderShadows;
         }
 
+        public static Vector3 GetModifiedAreaLightPositionForShadows(Vector3 originalPos, Vector2 shapeSize, Vector3 forwardVec, float coneAngle)
+        {
+            float rectangleDiagonal = shapeSize.magnitude;
+            float halfAngle = coneAngle * 0.5f;
+            float cotanHalfAngle = 1.0f / Mathf.Tan(halfAngle * Mathf.Deg2Rad);
+            float offset = rectangleDiagonal * cotanHalfAngle;
+
+            return originalPos - (forwardVec * offset);
+        }
+
         // Must return the first executed shadow request
         public int UpdateShadowRequest(HDCamera hdCamera, HDShadowManager manager, VisibleLight visibleLight, CullingResults cullResults, int lightIndex, out int shadowRequestCount)
         {
             int                 firstShadowRequestIndex = -1;
             Vector3             cameraPos = hdCamera.camera.transform.position;
             shadowRequestCount = 0;
-
+            
             int count = GetShadowRequestCount();
             for (int index = 0; index < count; index++)
             {
@@ -331,14 +344,16 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 
                 if (shadowRequestIndex == -1)
                     continue;
-
+                
                 // Write per light type matrices, splitDatas and culling parameters
                 switch (m_Light.type)
                 {
                     case LightType.Point:
                         if(lightTypeExtent == LightTypeExtent.Rectangle)
                         {
-                            HDShadowUtils.ExtractAreaLightData(hdCamera, visibleLight, lightTypeExtent, viewportSize, m_ShadowData.normalBiasMax, out shadowRequest.view, out invViewProjection, out shadowRequest.projection, out shadowRequest.deviceProjection, out shadowRequest.splitData);
+                            Vector2 shapeSize = new Vector2(shapeWidth, shapeHeight);
+                            Vector3 shadowPos = GetModifiedAreaLightPositionForShadows(visibleLight.GetPosition(), shapeSize, m_Light.transform.forward, areaLightShadowCone);
+                            HDShadowUtils.ExtractAreaLightData(hdCamera, visibleLight, lightTypeExtent, shadowPos, areaLightShadowCone, shapeSize, viewportSize, m_ShadowData.normalBiasMax, out shadowRequest.view, out invViewProjection, out shadowRequest.projection, out shadowRequest.deviceProjection, out shadowRequest.splitData);
                         }
                         else
                         {
@@ -382,7 +397,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                         manager.UpdateCascade(index, cullingSphere, m_ShadowSettings.cascadeShadowBorders[index]);
                         break;
                     case LightType.Area:
-                        HDShadowUtils.ExtractAreaLightData(hdCamera, visibleLight, lightTypeExtent, viewportSize, m_ShadowData.normalBiasMax, out shadowRequest.view, out invViewProjection, out shadowRequest.projection, out shadowRequest.deviceProjection, out shadowRequest.splitData);
+                        HDShadowUtils.ExtractAreaLightData(hdCamera, visibleLight, lightTypeExtent, new Vector3(), areaLightShadowCone, new Vector2(shapeWidth, shapeHeight), viewportSize, m_ShadowData.normalBiasMax, out shadowRequest.view, out invViewProjection, out shadowRequest.projection, out shadowRequest.deviceProjection, out shadowRequest.splitData);
                         break;
                 }
 
@@ -426,10 +441,19 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 invViewProjection = translation * invViewProjection;
             }
 
+            Vector3 shadowPosition = transform.position;
+            // If we have an area light we virtually shift its position for the sake of shadows so that the cone of the given aperture
+            // encompass the vertices of the light. 
+            if (lightTypeExtent == LightTypeExtent.Rectangle)
+            {
+                shadowPosition = GetModifiedAreaLightPositionForShadows(shadowPosition, new Vector2(shapeWidth, shapeHeight), m_Light.transform.forward, areaLightShadowCone);
+            }
+
+
             if (m_Light.type == LightType.Directional || (m_Light.type == LightType.Spot && spotLightShape == SpotLightShape.Box))
                 shadowRequest.position = new Vector3(shadowRequest.view.m03, shadowRequest.view.m13, shadowRequest.view.m23);
             else
-                shadowRequest.position = (ShaderConfig.s_CameraRelativeRendering != 0) ? transform.position - cameraPos : transform.position;
+                shadowRequest.position = (ShaderConfig.s_CameraRelativeRendering != 0) ? shadowPosition - cameraPos : shadowPosition;
 
             shadowRequest.shadowToWorld = invViewProjection.transpose;
             shadowRequest.zClip = (m_Light.type != LightType.Directional);

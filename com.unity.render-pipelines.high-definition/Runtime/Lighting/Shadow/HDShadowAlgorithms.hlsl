@@ -280,7 +280,7 @@ float EvalShadow_PunctualDepth(HDShadowData sd, Texture2D tex, SamplerComparison
 //
 //  Area light shadows
 //
-float EvalShadow_AreaDepth(HDShadowData sd, Texture2D tex, SamplerComparisonState samp, float2 positionSS, float3 positionWS, float3 normalWS, float3 L, float L_dist, bool perspective)
+float EvalShadow_AreaDepth(HDShadowData sd, Texture2D tex, SamplerComparisonState sampComp, SamplerState samp, float2 positionSS, float3 positionWS, float3 normalWS, float3 L, float L_dist, bool perspective)
 {
     // TODO_FCC: THIS IS ALL TEMP AND BROKEN
 
@@ -288,16 +288,21 @@ float EvalShadow_AreaDepth(HDShadowData sd, Texture2D tex, SamplerComparisonStat
     positionWS = StereoCameraRelativeEyeToCenter(positionWS);
 
     /* bias the world position */
-    float recvBiasWeight = EvalShadow_ReceiverBiasWeight(sd, _ESMShadowAtlasSize.zw, sd.atlasOffset, sd.viewBias, sd.edgeTolerance, sd.flags, tex, samp, positionWS, normalWS, L, L_dist, perspective);
+    float recvBiasWeight = EvalShadow_ReceiverBiasWeight(sd, _ESMShadowAtlasSize.zw, sd.atlasOffset, sd.viewBias, sd.edgeTolerance, sd.flags, tex, sampComp, positionWS, normalWS, L, L_dist, perspective);
     positionWS = EvalShadow_ReceiverBias(sd.viewBias, sd.normalBias, positionWS, normalWS, L, L_dist, recvBiasWeight, perspective);
     /* get shadowmap texcoords */
     float3 posTC = EvalShadow_GetTexcoordsAtlas(sd, _ShadowAtlasSize.zw, positionWS, perspective);
     /* get the per sample bias */
     float2 sampleBias = EvalShadow_SampleBias_Persp(positionWS, normalWS, posTC);
-    /* sample the texture */
-    return SampleShadow_PCF_Tent_3x3(_ESMShadowAtlasSize.zwxy, posTC, sampleBias, tex, samp);
-}
 
+    float lightLeakBias = 0.1f;
+    float varianceBias = 0.01f;
+    float2 exponents = 20.0f;
+    return SampleShadow_PCF_Tent_3x3(_ESMShadowAtlasSize.zwxy, posTC, sampleBias, tex, sampComp);
+   
+   // return SampleShadow_EVSM_1tap(posTC, lightLeakBias, varianceBias, exponents, false, tex, samp, true);
+    //return 
+}
 
 //
 //  Directional shadows (cascaded shadow map)

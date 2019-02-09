@@ -203,35 +203,47 @@ float SampleShadow_VSM_1tap(float3 tcs, float lightLeakBias, float varianceBias,
 //
 //                  1 tap EVSM sampling
 //
-float SampleShadow_EVSM_1tap(float3 tcs, float lightLeakBias, float varianceBias, float2 evsmExponents, bool fourMoments, Texture2D tex, SamplerState samp)
+float SampleShadow_EVSM_1tap(float3 tcs, float lightLeakBias, float varianceBias, float2 evsmExponents, bool fourMoments, Texture2D tex, SamplerState samp, bool hasMips)
 {
 #if UNITY_REVERSED_Z
-    float  depth      = 1.0 - tcs.z;
+    float  depth = 1.0 - tcs.z;
 #else
-    float  depth      = tcs.z;
+    float  depth = tcs.z;
 #endif
 
     float2 warpedDepth = ShadowMoments_WarpDepth(depth, evsmExponents);
 
-    float4 moments = SAMPLE_TEXTURE2D_LOD(tex, samp, tcs.xy, 0.0);
-
-    // Derivate of warping at depth
-    float2 depthScale  = evsmExponents * warpedDepth;
-    float2 minVariance = depthScale * depthScale * varianceBias;
-
-    UNITY_BRANCH
-    if (fourMoments)
+    float4 moments;
+    if (hasMips)
     {
-        float posContrib = ShadowMoments_ChebyshevsInequality(moments.xz, warpedDepth.x, minVariance.x, lightLeakBias);
-        float negContrib = ShadowMoments_ChebyshevsInequality(moments.yw, warpedDepth.y, minVariance.y, lightLeakBias);
-        return min(posContrib, negContrib);
+        moments = SAMPLE_TEXTURE2D_LOD(tex, samp, tcs.xy, 0.0);
     }
     else
     {
-        return ShadowMoments_ChebyshevsInequality(moments.xy, warpedDepth.x, minVariance.x, lightLeakBias);
+        moments = SAMPLE_TEXTURE2D(tex, samp, tcs.xy);
     }
+
+    // Derivate of warping at depth
+    float2 depthScale = evsmExponents * warpedDepth;
+    float2 minVariance = depthScale * depthScale * varianceBias;
+
+    UNITY_BRANCH
+        if (fourMoments)
+        {
+            float posContrib = ShadowMoments_ChebyshevsInequality(moments.xz, warpedDepth.x, minVariance.x, lightLeakBias);
+            float negContrib = ShadowMoments_ChebyshevsInequality(moments.yw, warpedDepth.y, minVariance.y, lightLeakBias);
+            return min(posContrib, negContrib);
+        }
+        else
+        {
+            return ShadowMoments_ChebyshevsInequality(moments.xy, warpedDepth.x, minVariance.x, lightLeakBias);
+        }
 }
 
+float SampleShadow_EVSM_1tap(float3 tcs, float lightLeakBias, float varianceBias, float2 evsmExponents, bool fourMoments, Texture2D tex, SamplerState samp)
+{
+    SampleShadow_EVSM_1tap(tcs, lightLeakBias, varianceBias, evsmExponents, fourMoments, tex, samp, false);
+}
 
 //
 //                  1 tap MSM sampling
