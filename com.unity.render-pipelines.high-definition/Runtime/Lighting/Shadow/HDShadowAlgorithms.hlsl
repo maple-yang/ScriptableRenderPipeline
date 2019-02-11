@@ -13,10 +13,12 @@
 
 #ifdef SHADOW_LOW
 #define PUNCTUAL_FILTER_ALGORITHM(sd, posSS, posTC, sampleBias, tex, samp) SampleShadow_PCF_Tent_3x3(_ShadowAtlasSize.zwxy, posTC, sampleBias, tex, samp)
+#define AREA_FILTER_ALGORITHM(sd, posSS, posTC, sampleBias, tex, samp) SampleShadow_PCF_Tent_3x3(_ESMShadowAtlasSize.zwxy, posTC, sampleBias, tex, samp)
 #define DIRECTIONAL_FILTER_ALGORITHM(sd, posSS, posTC, sampleBias, tex, samp) SampleShadow_PCF_Tent_5x5(_CascadeShadowAtlasSize.zwxy, posTC, sampleBias, tex, samp)
 #endif
 #ifdef SHADOW_MEDIUM
 #define PUNCTUAL_FILTER_ALGORITHM(sd, posSS, posTC, sampleBias, tex, samp) SampleShadow_PCF_Tent_3x3(_ShadowAtlasSize.zwxy, posTC, sampleBias, tex, samp)
+#define AREA_FILTER_ALGORITHM(sd, posSS, posTC, sampleBias, tex, samp) SampleShadow_PCF_Tent_3x3(_ESMShadowAtlasSize.zwxy, posTC, sampleBias, tex, samp)
 #define DIRECTIONAL_FILTER_ALGORITHM(sd, posSS, posTC, sampleBias, tex, samp) SampleShadow_PCF_Tent_7x7(_CascadeShadowAtlasSize.zwxy, posTC, sampleBias, tex, samp)
 #endif
 // Note: currently quality settings for PCSS need to be expose in UI and is control in HDLightUI.cs file IsShadowSettings
@@ -282,8 +284,6 @@ float EvalShadow_PunctualDepth(HDShadowData sd, Texture2D tex, SamplerComparison
 //
 float EvalShadow_AreaDepth(HDShadowData sd, Texture2D tex, SamplerComparisonState sampComp, SamplerState samp, float2 positionSS, float3 positionWS, float3 normalWS, float3 L, float L_dist, bool perspective)
 {
-    // TODO_FCC: THIS IS ALL TEMP AND BROKEN
-
     /* in stereo, translate input position to the same space as shadows for proper sampling and bias */
     positionWS = StereoCameraRelativeEyeToCenter(positionWS);
 
@@ -291,13 +291,10 @@ float EvalShadow_AreaDepth(HDShadowData sd, Texture2D tex, SamplerComparisonStat
     float recvBiasWeight = EvalShadow_ReceiverBiasWeight(sd, _ESMShadowAtlasSize.zw, sd.atlasOffset, sd.viewBias, sd.edgeTolerance, sd.flags, tex, sampComp, positionWS, normalWS, L, L_dist, perspective);
     positionWS = EvalShadow_ReceiverBias(sd.viewBias, sd.normalBias, positionWS, normalWS, L, L_dist, recvBiasWeight, perspective);
     /* get shadowmap texcoords */
-    float3 posTC = EvalShadow_GetTexcoordsAtlas(sd, _ShadowAtlasSize.zw, positionWS, perspective);
+    float3 posTC = EvalShadow_GetTexcoordsAtlas(sd, _ESMShadowAtlasSize.zw, positionWS, perspective);
     /* get the per sample bias */
     float2 sampleBias = EvalShadow_SampleBias_Persp(positionWS, normalWS, posTC);
 
-    float lightLeakBias = 0.1f;
-    float varianceBias = 0.01f;
-    float2 exponents = 20.0f;
     return SampleShadow_PCF_Tent_3x3(_ESMShadowAtlasSize.zwxy, posTC, sampleBias, tex, sampComp);
    
    // return SampleShadow_EVSM_1tap(posTC, lightLeakBias, varianceBias, exponents, false, tex, samp, true);

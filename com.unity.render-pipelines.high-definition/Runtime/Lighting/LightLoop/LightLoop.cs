@@ -1219,8 +1219,8 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 lightData.volumetricShadowDimmer = 1.0f;
             }
 
-            #if ENABLE_RAYTRACING
-            if(gpuLightType == GPULightType.Rectangle && lightComponent.shadows != LightShadows.None && areaShadowIndex < maxAreaLightShadows)
+#if ENABLE_RAYTRACING
+            if(gpuLightType == GPULightType.Rectangle && lightComponent.shadows != LightShadows.None && areaShadowIndex < maxAreaLightShadows && !additionalLightData.useRasterizedShadow)
             {
                 lightData.shadowIndex = areaShadowIndex;
                 additionalLightData.shadowIndex = -1;
@@ -1232,7 +1232,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 lightData.shadowIndex = shadowIndex;
                 additionalLightData.shadowIndex = shadowIndex;
             }
-            #else
+#else
             // fix up shadow information
             lightData.shadowIndex = shadowIndex;
             #endif

@@ -624,6 +624,9 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             if(serialized.editorLightShape == LightShape.Rectangle)
             {
                 EditorGUILayout.Slider(serialized.serializedLightData.areaLightShadowCone, 10.0f, 179.0f, s_Styles.areaLightShadowCone);
+#if ENABLE_RAYTRACING
+                EditorGUILayout.PropertyField(serialized.serializedLightData.useRasterizedShadow, s_Styles.useRasterizedShadow);
+#endif
             }
         }
 

@@ -66,17 +66,9 @@ float GetPunctualShadowClosestDistance(HDShadowContext shadowContext, SamplerSta
 }
 
 // TODO_FCC: Remove this
-float GetAreaLightAttenuation(HDShadowContext shadowContext, float2 positionSS, float3 positionWS, float3 normalWS, int shadowDataIndex, float3 L, float L_dist, bool pointLight, bool perspecive)
-{
-    // Note: Here we assume that all the shadow map cube faces have been added contiguously in the buffer to retreive the shadow information
-    HDShadowData sd = shadowContext.shadowDatas[shadowDataIndex];
-    return EvalShadow_AreaDepth(sd, _ESMShadowmapAtlas, s_linear_clamp_compare_sampler, s_trilinear_clamp_sampler, positionSS, positionWS, normalWS, L, L_dist, perspecive);
-}
-
-float GetAreaLightAttenuation(HDShadowContext shadowContext, float2 positionSS, float3 positionWS, int shadowDataIndex)
+float GetAreaLightAttenuation(HDShadowContext shadowContext, float2 positionSS, float3 positionWS, float3 normalWS, int shadowDataIndex, float3 L, float L_dist)
 {
     HDShadowData sd = shadowContext.shadowDatas[shadowDataIndex];
-
-    return 0;// EvalShadow_AreaDepth(sd, _ESMShadowmapAtlas, s_linear_clamp_compare_sampler, positionSS, positionWS, true);
+    return EvalShadow_AreaDepth(sd, _ESMShadowmapAtlas, s_linear_clamp_compare_sampler, s_trilinear_clamp_sampler, positionSS, positionWS, normalWS, L, L_dist, true);
 }
 #endif // LIGHTLOOP_HD_SHADOW_HLSL
