@@ -16,7 +16,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
         private SerializedProperty m_FadeScaleProperty;
         private SerializedProperty m_UVScaleProperty;
         private SerializedProperty m_UVBiasProperty;
-        private SerializedProperty m_AffectsTransparencyProperty;
+        private SerializedProperty m_TransparentSurfacesProperty;
         private SerializedProperty m_Size;
         private SerializedProperty m_IsCropModeEnabledProperty;
         private SerializedProperty m_FadeFactor;
@@ -37,7 +37,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             m_FadeScaleProperty = serializedObject.FindProperty("m_FadeScale");
             m_UVScaleProperty = serializedObject.FindProperty("m_UVScale");
             m_UVBiasProperty = serializedObject.FindProperty("m_UVBias");
-            m_AffectsTransparencyProperty = serializedObject.FindProperty("m_AffectsTransparency");
+            m_TransparentSurfacesProperty = serializedObject.FindProperty("m_TransparentSurfaces");
             m_Size = serializedObject.FindProperty("m_Size");
             m_IsCropModeEnabledProperty = serializedObject.FindProperty("m_IsCropModeEnabled");
             m_FadeFactor = serializedObject.FindProperty("m_FadeFactor");
@@ -135,7 +135,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             // only display the affects transparent property if material is HDRP/decal
             if (DecalSystem.IsHDRenderPipelineDecal(m_DecalProjectorComponent.Mat.shader.name))
             {
-                EditorGUILayout.PropertyField(m_AffectsTransparencyProperty);
+                EditorGUILayout.PropertyField(m_TransparentSurfacesProperty);
             }
 
             if (EditorGUI.EndChangeCheck())

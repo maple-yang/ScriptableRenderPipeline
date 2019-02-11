@@ -121,7 +121,7 @@ Shader "HDRP/Decal"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Decal/Decal.hlsl"
 			#include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Decal/ShaderPass/DecalSharePass.hlsl"
 			#include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Decal/DecalData.hlsl"
-			#include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassDBuffer.hlsl"
+			#include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassDecal.hlsl"
 
 			ENDHLSL
 		}
@@ -177,7 +177,7 @@ Shader "HDRP/Decal"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Decal/Decal.hlsl"
 			#include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Decal/ShaderPass/DecalSharePass.hlsl"
 			#include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Decal/DecalData.hlsl"
-			#include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassDBuffer.hlsl"
+			#include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassDecal.hlsl"
 
 			ENDHLSL
 		}
@@ -214,7 +214,7 @@ Shader "HDRP/Decal"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Decal/Decal.hlsl"
 			#include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Decal/ShaderPass/DecalSharePass.hlsl"
 			#include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Decal/DecalData.hlsl"
-			#include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassDBuffer.hlsl"
+			#include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassDecal.hlsl"
 
 			ENDHLSL
 		}
@@ -251,7 +251,7 @@ Shader "HDRP/Decal"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Decal/Decal.hlsl"
 			#include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Decal/ShaderPass/DecalSharePass.hlsl"
 			#include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Decal/DecalData.hlsl"
-			#include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassDBuffer.hlsl"
+			#include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassDecal.hlsl"
 
 			ENDHLSL
 		}
@@ -290,7 +290,7 @@ Shader "HDRP/Decal"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Decal/Decal.hlsl"
 			#include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Decal/ShaderPass/DecalSharePass.hlsl"
 			#include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Decal/DecalData.hlsl"
-			#include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassDBuffer.hlsl"
+			#include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassDecal.hlsl"
 
 			ENDHLSL
 		}
@@ -328,7 +328,7 @@ Shader "HDRP/Decal"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Decal/Decal.hlsl"
 			#include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Decal/ShaderPass/DecalSharePass.hlsl"
 			#include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Decal/DecalData.hlsl"
-			#include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassDBuffer.hlsl"
+			#include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassDecal.hlsl"
 
 			ENDHLSL
 		}
@@ -366,7 +366,7 @@ Shader "HDRP/Decal"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Decal/Decal.hlsl"
 			#include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Decal/ShaderPass/DecalSharePass.hlsl"
 			#include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Decal/DecalData.hlsl"
-			#include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassDBuffer.hlsl"
+			#include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassDecal.hlsl"
 
 			ENDHLSL
 		}
@@ -401,7 +401,7 @@ Shader "HDRP/Decal"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Decal/Decal.hlsl"
 			#include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Decal/ShaderPass/DecalSharePass.hlsl"
 			#include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Decal/DecalData.hlsl"
-			#include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassDBuffer.hlsl"
+			#include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassDecal.hlsl"
 
             ENDHLSL
         }
@@ -446,7 +446,7 @@ Shader "HDRP/Decal"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Decal/Decal.hlsl"
 			#include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Decal/ShaderPass/DecalSharePass.hlsl"
 			#include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Decal/DecalData.hlsl"
-			#include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassDBuffer.hlsl"
+			#include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassDecal.hlsl"
 
 			ENDHLSL
 		}
@@ -482,7 +482,7 @@ Shader "HDRP/Decal"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Decal/Decal.hlsl"
 			#include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Decal/ShaderPass/DecalSharePass.hlsl"
 			#include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Decal/DecalData.hlsl"
-			#include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassDBuffer.hlsl"
+			#include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassDecal.hlsl"
 
 			ENDHLSL
 		}
@@ -518,7 +518,7 @@ Shader "HDRP/Decal"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Decal/Decal.hlsl"
 			#include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Decal/ShaderPass/DecalSharePass.hlsl"
 			#include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Decal/DecalData.hlsl"
-			#include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassDBuffer.hlsl"
+			#include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassDecal.hlsl"
 
 			ENDHLSL
 		}
@@ -553,7 +553,7 @@ Shader "HDRP/Decal"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Decal/Decal.hlsl"
 			#include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Decal/ShaderPass/DecalSharePass.hlsl"
 			#include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Decal/DecalData.hlsl"
-			#include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassDBuffer.hlsl"
+			#include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassDecal.hlsl"
 
 			ENDHLSL
 		}
@@ -590,7 +590,7 @@ Shader "HDRP/Decal"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Decal/Decal.hlsl"
 			#include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Decal/ShaderPass/DecalSharePass.hlsl"
 			#include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Decal/DecalData.hlsl"
-			#include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassDBuffer.hlsl"
+			#include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassDecal.hlsl"
 
 			ENDHLSL
 		}
@@ -626,7 +626,7 @@ Shader "HDRP/Decal"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Decal/Decal.hlsl"
 			#include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Decal/ShaderPass/DecalSharePass.hlsl"
 			#include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Decal/DecalData.hlsl"
-			#include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassDBuffer.hlsl"
+			#include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassDecal.hlsl"
 
 			ENDHLSL
 		}
@@ -659,7 +659,7 @@ Shader "HDRP/Decal"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Decal/Decal.hlsl"
 			#include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Decal/ShaderPass/DecalSharePass.hlsl"
 			#include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Decal/DecalData.hlsl"
-			#include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassDBuffer.hlsl"
+			#include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassDecal.hlsl"
 
 			ENDHLSL
 		}
@@ -690,7 +690,7 @@ Shader "HDRP/Decal"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Decal/Decal.hlsl"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Decal/ShaderPass/DecalSharePass.hlsl"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Decal/DecalData.hlsl"
-            #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassDecalForwardEmissive.hlsl"
+            #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassDecal.hlsl"
 
             ENDHLSL
         }
@@ -720,7 +720,7 @@ Shader "HDRP/Decal"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Decal/Decal.hlsl"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Decal/ShaderPass/DecalSharePass.hlsl"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Decal/DecalData.hlsl"
-            #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassDecalForwardEmissive.hlsl"
+            #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassDecal.hlsl"
 
             ENDHLSL
         }
